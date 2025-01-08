@@ -14,7 +14,7 @@ from vllm.engine.arg_utils import EngineArgs
 from vllm.entrypoints.openai.api_server import run_server
 from vllm.entrypoints.openai.cli_args import (make_arg_parser,
                                               validate_parsed_serve_args)
-from vllm.entrypoints.connect import run_connect
+from vllm.entrypoints.disagg_connector import run_disagg_connector
 from vllm.logger import init_logger
 from vllm.utils import FlexibleArgumentParser
 
@@ -43,7 +43,7 @@ def serve(args: argparse.Namespace) -> None:
     uvloop.run(run_server(args))
 
 def connect(args: argparse.Namespace) -> None:
-    uvloop.run(run_connect(args))
+    uvloop.run(run_disagg_connector(args))
 
 
 def interactive_cli(args: argparse.Namespace) -> None:
@@ -202,9 +202,11 @@ def main():
         usage="vllm connect <model_tag> [options]")
     connect_parser.add_argument("--prefill-addr",
                               type=str,
+                              required=True,
                               help="The prefill address IP:PORT")
     connect_parser.add_argument("--decode-addr",
                               type=str,
+                              required=True,
                               help="The decode address IP:PORT")
     connect_parser.set_defaults(dispatch_function=connect)
 
