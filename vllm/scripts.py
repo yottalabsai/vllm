@@ -202,6 +202,10 @@ def main():
         help="Start the vLLM OpenAI Compatible API server And Connect to other"
         "servers disaggreate prefill and decode",
         usage="vllm connect <model_tag> [options]")
+    connect_parser.add_argument("--port",
+                                type=int,
+                                default=8001,
+                                help="The fastapi server port")
     connect_parser.add_argument("--prefill-addr",
                                 type=str,
                                 required=True,
