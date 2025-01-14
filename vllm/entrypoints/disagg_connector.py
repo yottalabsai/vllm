@@ -17,17 +17,17 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from vllm.logger import init_logger
 
 # default prefill and decode addr
-time_out = 3
+time_out = 30000
 fastapi_port = 8001
 prefill_addr = "ipc://localhost:7010"
-socket_prefill_num = 20
+socket_prefill_num = 200
 decode_addr = "ipc://localhost:7020"
-socket_decode_num = 20
+socket_decode_num = 200
 context_type_json = "application/json"
 context_type_error = "error"
 
 # Cannot use __name__ (https://github.com/vllm-project/vllm/pull/4765)
-logger = init_logger('vllm.entrypoints.connect')
+logger = init_logger('vllm.entrypoints.disagg_connector')
 
 
 @asynccontextmanager
@@ -144,7 +144,7 @@ async def decode(route: str, header: dict, original_request_data: dict):
                                      media_type="text/event-stream")
 
 
-@app.post('/v1/connect/completions')
+@app.post('/v1/completions')
 async def chat_completions(request: Request):
     try:
         # Add the X-Request-Id header to the raw headers list
