@@ -34,35 +34,23 @@ wait_for_server() {
 
 
 launch_chunked_prefill() {
-  # model="Qwen/Qwen2.5-7B-Instruct"
-  model="unsloth/Meta-Llama-3.1-8B-Instruct-bnb-4bit"
+  model="Qwen/Qwen2.5-7B-Instruct"
   gpu_memory_utilization=0.6
-  # gpu_memory_utilization=0.4
-    # max_model_len=10000
-  max_model_len=1024
-  chat_template="/home/ubuntu/vllm/examples/template_chatglm2.jinja"
+  max_model_len=10000
   # disagg prefill
   CUDA_VISIBLE_DEVICES=0 python3 \
     -m vllm.entrypoints.openai.api_server \
     --model $model \
     --port 8100 \
-    --zmq-server-port 7010 \
     --max-model-len $max_model_len \
     --enable-chunked-prefill \
-    --dtype=half \
-    --quantization bitsandbytes \
-    --load-format bitsandbytes \
     --gpu-memory-utilization $gpu_memory_utilization &
   CUDA_VISIBLE_DEVICES=1 python3 \
     -m vllm.entrypoints.openai.api_server \
     --model $model \
     --port 8200 \
-    --zmq-server-port 7011 \
     --max-model-len $max_model_len \
     --enable-chunked-prefill \
-    --dtype=half \
-    --quantization bitsandbytes \
-    --load-format bitsandbytes \
     --gpu-memory-utilization $gpu_memory_utilization &
   wait_for_server 8100
   wait_for_server 8200
@@ -72,15 +60,10 @@ launch_chunked_prefill() {
 
 
 launch_disagg_prefill() {
-  # model="Qwen/Qwen2.5-7B-Instruct"
-  model="unsloth/Meta-Llama-3.1-8B-Instruct-bnb-4bit"
-   gpu_memory_utilization=0.6
-  # gpu_memory_utilization=0.4
-  # max_model_len=10000
-  max_model_len=1024
-  chat_template="/home/ubuntu/vllm/examples/template_chatglm2.jinja"
+  model="Qwen/Qwen2.5-7B-Instruct"
+  gpu_memory_utilization=0.6
+  max_model_len=10000
   # disagg prefill
-  # --chat-template $chat_template \
   CUDA_VISIBLE_DEVICES=0 python3 \
     -m vllm.entrypoints.openai.api_server \
     --model $model \
@@ -88,11 +71,8 @@ launch_disagg_prefill() {
     --zmq-server-port 7010 \
     --max-model-len $max_model_len \
     --gpu-memory-utilization $gpu_memory_utilization \
-    --dtype=half \
-    --quantization bitsandbytes \
-    --load-format bitsandbytes \
     --kv-transfer-config \
-    '{"kv_connector":"PyNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_buffer_size":5e9, "kv_port": 12345}' &
+    '{"kv_connector":"PyNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_buffer_size":5e9' &
 
 # --chat-template $chat_template \
   CUDA_VISIBLE_DEVICES=1 python3 \
@@ -102,11 +82,8 @@ launch_disagg_prefill() {
     --zmq-server-port 7011 \
     --max-model-len $max_model_len \
     --gpu-memory-utilization $gpu_memory_utilization \
-    --dtype=half \
-    --quantization bitsandbytes \
-    --load-format bitsandbytes \
     --kv-transfer-config \
-    '{"kv_connector":"PyNcclConnector","kv_role":"kv_consumer","kv_rank":1,"kv_parallel_size":2,"kv_buffer_size":5e9,"kv_port": 12346}' &
+    '{"kv_connector":"PyNcclConnector","kv_role":"kv_consumer","kv_rank":1,"kv_parallel_size":2,"kv_buffer_size":5e9}' &
 
   vllm connect --prefill-addr 127.0.0.1:7010 --decode-addr 127.0.0.1:7011 --port 8001 &
 
@@ -120,9 +97,7 @@ launch_disagg_prefill() {
 
 benchmark() {
   results_folder="./results"
-  # model="Qwen/Qwen2.5-7B-Instruct"
-  # model="facebook/opt-125m"
-  model="unsloth/Meta-Llama-3.1-8B-Instruct-bnb-4bit"
+  model="Qwen/Qwen2.5-7B-Instruct"
   dataset_name="sonnet"
   dataset_path="../../sonnet_4x.txt"
   num_prompts=100
@@ -157,18 +132,9 @@ main() {
   (which jq) || (apt-get -y install jq)
   (which socat) || (apt-get -y install socat)
   (which lsof) || (apt-get -y install lsof)
-  # conda info --envs
   pip install quart httpx matplotlib aiohttp datasets bitsandbytes>=0.45.0 --ignore-installed blinker
-
-
-  pwd
-  # VLLM_USE_PRECOMPILED=1 pip install --editable .
   cd "$(dirname "$0")"
-  pwd
   cd ../..
-  pwd
-  # cd ..
-  # pwd
   # create sonnet-4x.txt so that we can sample 2048 tokens for input
   echo "" > sonnet_4x.txt
   for _ in {1..4}
@@ -177,18 +143,18 @@ main() {
   done
   cd disagg_benchmarks/zmq
 
-  # rm -rf results
-  # mkdir results
+  rm -rf results
+  mkdir results
 
   default_output_len=6
 
   export VLLM_HOST_IP=$(hostname -I | awk '{print $1}')
 
-  # launch_chunked_prefill
-  # for qps in 2 4 6 8; do
-  # benchmark $qps $default_output_len chunked_prefill
-  # done
-  # kill_gpu_processes
+  launch_chunked_prefill
+  for qps in 2 4 6 8; do
+  benchmark $qps $default_output_len chunked_prefill
+  done
+  kill_gpu_processes
 
   launch_disagg_prefill
   for qps in 2 4 6 8; do
