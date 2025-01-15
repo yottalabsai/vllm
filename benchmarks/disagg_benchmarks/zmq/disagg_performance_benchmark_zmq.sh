@@ -18,7 +18,7 @@ kill_gpu_processes() {
   # kill all processes on GPU.
   pgrep pt_main_thread | xargs -r kill -9
   pgrep python3 | xargs -r kill -9
-  for port in 7010 7011 8000 8001 8100 8200; do lsof -t -i:$port | xargs -r kill -9; done
+  for port in 7010 7011 8000 8100 8200; do lsof -t -i:$port | xargs -r kill -9; done
   sleep 1
 }
 
@@ -85,11 +85,11 @@ launch_disagg_prefill() {
     --kv-transfer-config \
     '{"kv_connector":"PyNcclConnector","kv_role":"kv_consumer","kv_rank":1,"kv_parallel_size":2,"kv_buffer_size":5e9}' &
 
-  vllm connect --prefill-addr 127.0.0.1:7010 --decode-addr 127.0.0.1:7011 --port 8001 &
+  vllm connect --prefill-addr 127.0.0.1:7010 --decode-addr 127.0.0.1:7011 --port 8000 &
 
   wait_for_server 8100
   wait_for_server 8200
-  wait_for_server 8001
+  wait_for_server 8000
   python3 disagg_prefill_proxy_server_zmq.py &
   sleep 1
 }
@@ -116,7 +116,7 @@ benchmark() {
           --sonnet-output-len "$output_len" \
           --sonnet-prefix-len $prefix_len \
           --num-prompts $num_prompts \
-          --port 8000 \
+          --port 8001 \
           --save-result \
           --result-dir $results_folder \
           --result-filename "$tag"-qps-"$qps".json \
