@@ -72,7 +72,7 @@ launch_disagg_prefill() {
     --max-model-len $max_model_len \
     --gpu-memory-utilization $gpu_memory_utilization \
     --kv-transfer-config \
-    '{"kv_connector":"PyNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_buffer_size":5e9' &
+    '{"kv_connector":"PyNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_buffer_size":5e9}' &
 
 # --chat-template $chat_template \
   CUDA_VISIBLE_DEVICES=1 python3 \
