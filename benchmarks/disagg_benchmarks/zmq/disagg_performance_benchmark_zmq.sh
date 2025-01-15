@@ -60,7 +60,7 @@ launch_chunked_prefill() {
 
 
 launch_disagg_prefill() {
-  model="meta-llama/Meta-Llama-3.1-8B-Instruct"
+  model="meta-llama/Meta-Llama-3.1-8B-Instruct" 
   gpu_memory_utilization=0.6
   max_model_len=10000
   # disagg prefill
@@ -74,7 +74,6 @@ launch_disagg_prefill() {
     --kv-transfer-config \
     '{"kv_connector":"PyNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_buffer_size":5e9}' &
 
-# --chat-template $chat_template \
   CUDA_VISIBLE_DEVICES=1 python3 \
     -m vllm.entrypoints.openai.api_server \
     --model $model \
@@ -90,7 +89,6 @@ launch_disagg_prefill() {
   wait_for_server 8100
   wait_for_server 8200
   wait_for_server 8000
-  python3 disagg_prefill_proxy_server_zmq.py &
   sleep 1
 }
 
@@ -116,7 +114,7 @@ benchmark() {
           --sonnet-output-len "$output_len" \
           --sonnet-prefix-len $prefix_len \
           --num-prompts $num_prompts \
-          --port 8001 \
+          --port 8000 \
           --save-result \
           --result-dir $results_folder \
           --result-filename "$tag"-qps-"$qps".json \
