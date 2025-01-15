@@ -34,7 +34,7 @@ wait_for_server() {
 
 
 launch_chunked_prefill() {
-  model="Qwen/Qwen2.5-7B-Instruct"
+  model="meta-llama/Meta-Llama-3.1-8B-Instruct"
   gpu_memory_utilization=0.6
   max_model_len=10000
   # disagg prefill
@@ -60,7 +60,7 @@ launch_chunked_prefill() {
 
 
 launch_disagg_prefill() {
-  model="Qwen/Qwen2.5-7B-Instruct"
+  model="meta-llama/Meta-Llama-3.1-8B-Instruct"
   gpu_memory_utilization=0.6
   max_model_len=10000
   # disagg prefill
@@ -97,7 +97,7 @@ launch_disagg_prefill() {
 
 benchmark() {
   results_folder="./results"
-  model="Qwen/Qwen2.5-7B-Instruct"
+  model="meta-llama/Meta-Llama-3.1-8B-Instruct"
   dataset_name="sonnet"
   dataset_path="../../sonnet_4x.txt"
   num_prompts=100
@@ -132,7 +132,7 @@ main() {
   (which jq) || (apt-get -y install jq)
   (which socat) || (apt-get -y install socat)
   (which lsof) || (apt-get -y install lsof)
-  pip install quart httpx matplotlib aiohttp datasets bitsandbytes>=0.45.0 --ignore-installed blinker
+  pip install quart httpx matplotlib aiohttp datasets
   cd "$(dirname "$0")"
   cd ../..
   # create sonnet-4x.txt so that we can sample 2048 tokens for input
