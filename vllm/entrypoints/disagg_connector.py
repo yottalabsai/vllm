@@ -9,16 +9,18 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 import uvicorn
+import uvloop
 import zmq
 import zmq.asyncio
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from vllm.logger import init_logger
+from vllm.utils import FlexibleArgumentParser
 
 # default prefill and decode addr
-time_out = 30000
-fastapi_port = 8001
+time_out = 180
+fastapi_port = 8000
 prefill_addr = "ipc://localhost:7010"
 socket_prefill_num = 200
 decode_addr = "ipc://localhost:7020"
@@ -208,5 +210,25 @@ async def run_disagg_connector(args, **uvicorn_kwargs) -> None:
 
 
 if __name__ == "__main__":
-    # url = 'tcp://127.0.0.1:5555'
-    uvicorn.run(app, host="0.0.0.0", port=fastapi_port)
+        # NOTE(simon):
+    # This section should be in sync with vllm/scripts.py for CLI entrypoints.
+    parser = FlexibleArgumentParser(
+        description="vLLM disagg zmq server.")
+    parser.add_argument("--port",
+                                type=int,
+                                default=8000,
+                                help="The fastapi server port")
+    parser.add_argument("--prefill-addr",
+                                type=str,
+                                required=True,
+                                help="The prefill address IP:PORT")
+    parser.add_argument("--decode-addr",
+                                type=str,
+                                required=True,
+                                help="The decode address IP:PORT")
+    
+    args = parser.parse_args()
+
+    uvloop.run(run_disagg_connector(args))
+
+    # uvicorn.run(app, host="0.0.0.0", port=fastapi_port)

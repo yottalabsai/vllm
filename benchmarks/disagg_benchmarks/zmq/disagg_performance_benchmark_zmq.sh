@@ -84,7 +84,11 @@ launch_disagg_prefill() {
     --kv-transfer-config \
     '{"kv_connector":"PyNcclConnector","kv_role":"kv_consumer","kv_rank":1,"kv_parallel_size":2,"kv_buffer_size":5e9}' &
 
-  vllm connect --prefill-addr 127.0.0.1:7010 --decode-addr 127.0.0.1:7011 --port 8000 &
+  python3 \
+    -m vllm.entrypoints.disagg_connector \
+    --port 8000 \
+    --prefill-addr 127.0.0.1:7010 \
+    --decode-addr 127.0.0.1:7011 &
 
   wait_for_server 8100
   wait_for_server 8200
