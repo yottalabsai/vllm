@@ -181,11 +181,11 @@ main() {
 
   export VLLM_HOST_IP=$(hostname -I | awk '{print $1}')
   
-  # launch_chunked_prefill
-  # for qps in 2 4 6 8 10 12; do
-  # benchmark $qps $default_output_len chunked_prefill
-  # done
-  # kill_gpu_processes
+  launch_chunked_prefill
+  for qps in 2 4 6 8 10 12; do
+  benchmark $qps $default_output_len chunked_prefill
+  done
+  kill_gpu_processes
 
 
   launch_disagg_prefill_http
