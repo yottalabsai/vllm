@@ -4,11 +4,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 if __name__ == "__main__":
-    base = '/home/clark/benchmarks/zmq_http/25_16_4'
     data = []
     for name in ['disagg_prefill_http', 'disagg_prefill_zmq', 'chunked_prefill']:
         for qps in [2, 4, 6, 8, 10, 12]:
-            with open(f"{base}/results/{name}-qps-{qps}.json") as f:
+            with open(f"results/{name}-qps-{qps}.json") as f:
                 x = json.load(f)
                 x['name'] = name
                 x['qps'] = qps
@@ -49,5 +48,25 @@ if __name__ == "__main__":
         ax.set_xlabel('QPS')
         ax.set_ylabel(key)
         ax.set_ylim(bottom=0)
-        fig.savefig(f'{base}/results/compare/{key}.png')
+        fig.savefig(f'/results/compare/{key}_http_zmq_chunk.png')
         plt.close(fig)
+
+
+        fig1, ax1 = plt.subplots(figsize=(11, 7))
+        plt.plot(dis_http_df['qps'],
+                 dis_http_df[key],
+                 label='disagg_prefill_http',
+                 marker='o',
+                 linewidth=4)
+        plt.plot(dis_zmq_df['qps'],
+                 dis_zmq_df[key],
+                 label='disagg_prefill_zmq',
+                 marker='o',
+                 linewidth=4)
+        ax1.legend()
+
+        ax1.set_xlabel('QPS')
+        ax1.set_ylabel(key)
+        ax1.set_ylim(bottom=0)
+        fig1.savefig(f'results/compare/{key}_http_zmq.png')
+        plt.close(fig1)
