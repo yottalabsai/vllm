@@ -6,7 +6,7 @@ import pandas as pd
 if __name__ == "__main__":
 
     data = []
-    for name in ['disagg_prefill_http', 'disagg_prefill_zmq']:
+    for name in ['disagg_prefill_http', 'disagg_prefill_zmq', 'chunked_prefill']:
         for qps in [2, 4, 6, 8, 10, 12]:
             with open(f"results/{name}-qps-{qps}.json") as f:
                 x = json.load(f)
@@ -17,6 +17,8 @@ if __name__ == "__main__":
     df = pd.DataFrame.from_dict(data)
     dis_http_df = df[df['name'] == 'disagg_prefill_http']
     dis_zmq_df = df[df['name'] == 'disagg_prefill_zmq']
+    chu_df = df[df['name'] == 'chunked_prefill']
+    
 
     plt.style.use('bmh')
     plt.rcParams['font.size'] = 20
@@ -35,6 +37,11 @@ if __name__ == "__main__":
         plt.plot(dis_zmq_df['qps'],
                  dis_zmq_df[key],
                  label='disagg_prefill_zmq',
+                 marker='o',
+                 linewidth=4)
+        plt.plot(dis_zmq_df['qps'],
+                 dis_zmq_df[key],
+                 label='chunked_prefill',
                  marker='o',
                  linewidth=4)
         ax.legend()

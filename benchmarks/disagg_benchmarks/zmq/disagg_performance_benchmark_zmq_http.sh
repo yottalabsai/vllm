@@ -32,6 +32,30 @@ wait_for_server() {
     done" && return 0 || return 1
 }
 
+launch_chunked_prefill() {
+  model="meta-llama/Meta-Llama-3.1-8B-Instruct"
+  gpu_memory_utilization=0.6
+  max_model_len=10000
+  # disagg prefill
+  VLLM_LOGGING_LEVEL=DEBUG CUDA_VISIBLE_DEVICES=0 python3 \
+    -m vllm.entrypoints.openai.api_server \
+    --model $model \
+    --port 8100 \
+    --max-model-len $max_model_len \
+    --enable-chunked-prefill \
+    --gpu-memory-utilization $gpu_memory_utilization &
+  VLLM_LOGGING_LEVEL=DEBUG CUDA_VISIBLE_DEVICES=1 python3 \
+    -m vllm.entrypoints.openai.api_server \
+    --model $model \
+    --port 8200 \
+    --max-model-len $max_model_len \
+    --enable-chunked-prefill \
+    --gpu-memory-utilization $gpu_memory_utilization &
+  wait_for_server 8100
+  wait_for_server 8200
+  python3 round_robin_proxy_zmq.py &
+  sleep 1
+}
 
 launch_disagg_prefill_http() {
   model="meta-llama/Meta-Llama-3.1-8B-Instruct" 
@@ -154,6 +178,13 @@ main() {
   default_output_len=6
 
   export VLLM_HOST_IP=$(hostname -I | awk '{print $1}')
+  
+  launch_chunked_prefill
+  for qps in 2 4 6 8 10 12; do
+  benchmark $qps $default_output_len chunked_prefill
+  done
+  kill_gpu_processes
+
 
   launch_disagg_prefill_http
   for qps in 2 4 6 8 10 12; do
