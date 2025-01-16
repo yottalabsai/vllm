@@ -64,7 +64,7 @@ launch_disagg_prefill() {
   gpu_memory_utilization=0.6
   max_model_len=10000
   # disagg prefill
-  CUDA_VISIBLE_DEVICES=0 python3 \
+  CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=0 python3 \
     -m vllm.entrypoints.openai.api_server \
     --model $model \
     --port 8100 \
@@ -72,9 +72,9 @@ launch_disagg_prefill() {
     --max-model-len $max_model_len \
     --gpu-memory-utilization $gpu_memory_utilization \
     --kv-transfer-config \
-    '{"kv_connector":"PyNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_buffer_size":10e9}' &
+    '{"kv_connector":"PyNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_buffer_size":5e9}' &
 
-  CUDA_VISIBLE_DEVICES=1 python3 \
+  CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=1 python3 \
     -m vllm.entrypoints.openai.api_server \
     --model $model \
     --port 8200 \
@@ -82,7 +82,7 @@ launch_disagg_prefill() {
     --max-model-len $max_model_len \
     --gpu-memory-utilization $gpu_memory_utilization \
     --kv-transfer-config \
-    '{"kv_connector":"PyNcclConnector","kv_role":"kv_consumer","kv_rank":1,"kv_parallel_size":2,"kv_buffer_size":10e9}' &
+    '{"kv_connector":"PyNcclConnector","kv_role":"kv_consumer","kv_rank":1,"kv_parallel_size":2,"kv_buffer_size":5e9}' &
 
   python3 \
     -m vllm.entrypoints.disagg_connector \
