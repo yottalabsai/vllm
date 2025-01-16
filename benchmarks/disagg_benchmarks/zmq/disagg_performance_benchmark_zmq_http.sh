@@ -167,7 +167,7 @@ main() {
   done
   kill_gpu_processes
 
-  python3 visualize_benchmark_results_zmq.py
+  python3 visualize_benchmark_results_zmq_http.py
 
 }
 
