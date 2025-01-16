@@ -22,9 +22,9 @@ from vllm.utils import FlexibleArgumentParser
 time_out = 180
 fastapi_port = 8000
 prefill_addr = "ipc://localhost:7010"
-socket_prefill_num = 200
+socket_prefill_num = 100
 decode_addr = "ipc://localhost:7020"
-socket_decode_num = 200
+socket_decode_num = 100
 context_type_json = "application/json"
 context_type_error = "error"
 
