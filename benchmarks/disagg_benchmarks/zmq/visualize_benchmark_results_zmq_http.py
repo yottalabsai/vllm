@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 if __name__ == "__main__":
-
+    base = '/home/clark/benchmarks/zmq_http/25_16_4'
     data = []
     for name in ['disagg_prefill_http', 'disagg_prefill_zmq', 'chunked_prefill']:
         for qps in [2, 4, 6, 8, 10, 12]:
-            with open(f"results/{name}-qps-{qps}.json") as f:
+            with open(f"{base}/results/{name}-qps-{qps}.json") as f:
                 x = json.load(f)
                 x['name'] = name
                 x['qps'] = qps
@@ -39,8 +39,8 @@ if __name__ == "__main__":
                  label='disagg_prefill_zmq',
                  marker='o',
                  linewidth=4)
-        plt.plot(dis_zmq_df['qps'],
-                 dis_zmq_df[key],
+        plt.plot(chu_df['qps'],
+                 chu_df[key],
                  label='chunked_prefill',
                  marker='o',
                  linewidth=4)
@@ -49,5 +49,5 @@ if __name__ == "__main__":
         ax.set_xlabel('QPS')
         ax.set_ylabel(key)
         ax.set_ylim(bottom=0)
-        fig.savefig(f'results/{key}.png')
+        fig.savefig(f'{base}/results/compare/{key}.png')
         plt.close(fig)
