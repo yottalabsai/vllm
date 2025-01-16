@@ -48,7 +48,7 @@ if __name__ == "__main__":
         ax.set_xlabel('QPS')
         ax.set_ylabel(key)
         ax.set_ylim(bottom=0)
-        fig.savefig(f'/results/compare/{key}_http_zmq_chunk.png')
+        fig.savefig(f'results/http_zmq_chunk/{key}.png')
         plt.close(fig)
 
 
@@ -68,5 +68,6 @@ if __name__ == "__main__":
         ax1.set_xlabel('QPS')
         ax1.set_ylabel(key)
         ax1.set_ylim(bottom=0)
-        fig1.savefig(f'results/compare/{key}_http_zmq.png')
+        fig1.savefig(f'results/http_zmq/{key}.png')
         plt.close(fig1)
+ 

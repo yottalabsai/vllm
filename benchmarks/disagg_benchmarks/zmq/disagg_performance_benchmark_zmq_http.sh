@@ -53,7 +53,7 @@ launch_chunked_prefill() {
     --gpu-memory-utilization $gpu_memory_utilization &
   wait_for_server 8100
   wait_for_server 8200
-  python3 round_robin_proxy_zmq.py &
+  python3 ../round_robin_proxy.py &
   sleep 1
 }
 
@@ -174,7 +174,9 @@ main() {
 
   rm -rf results
   mkdir results
-
+  mkdir results/http_zmq_chunk
+  mkdir results/http_zmq
+  
   default_output_len=6
 
   export VLLM_HOST_IP=$(hostname -I | awk '{print $1}')
