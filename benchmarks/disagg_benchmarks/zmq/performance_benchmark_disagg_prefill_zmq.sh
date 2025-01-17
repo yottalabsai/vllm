@@ -121,8 +121,7 @@ main() {
   do
     cat sonnet.txt >> sonnet_4x.txt
   done
-  cd disagg_benchmarks/zmq
-
+  
   cd disagg_benchmarks/zmq
   rm -rf results/disagg_prefill_zmq
   mkdir -p results/disagg_prefill_zmq
