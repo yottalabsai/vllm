@@ -121,7 +121,7 @@ main() {
   
   launch_disagg_prefill_http
   for qps in 1 12 24 48 96; do
-    for index in {1..3}; do
+    for index in 1 2 3; do
       benchmark $qps $default_output_len disagg_prefill_http $index
     done
   done
