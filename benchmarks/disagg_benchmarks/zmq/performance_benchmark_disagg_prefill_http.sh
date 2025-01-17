@@ -112,8 +112,6 @@ main() {
   cd disagg_benchmarks/zmq
   rm -rf results/disagg_prefill_http
   mkdir -p results/disagg_prefill_http
-  disagg_prefill_http
-  dissagg_prefill_http
 
   default_output_len=6
 
