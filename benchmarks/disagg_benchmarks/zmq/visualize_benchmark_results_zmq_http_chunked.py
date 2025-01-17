@@ -1,11 +1,8 @@
 import json
 import os
-import random
 
 import matplotlib.pyplot as plt
-from numpy import single
 import pandas as pd
-from sympy import N
 
 
 def draw_png(keys, df_list, label_col, path):
@@ -39,7 +36,7 @@ if __name__ == "__main__":
     data = []
     names = ['disagg_prefill_http', 'disagg_prefill_zmq', 'chunked_prefill']
     for name in names:
-        for qps in [1, 12, 24, 48, 96]:
+        for qps in [12, 24, 48, 96]:
             for index in range(1, 4):
                 with open(f"results/{name}_qps_{qps}_{index}.json") as f:
                     x = json.load(f)

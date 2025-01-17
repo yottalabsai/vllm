@@ -131,7 +131,7 @@ main() {
   export VLLM_HOST_IP=$(hostname -I | awk '{print $1}')
   
   launch_disagg_prefill_zmq
-  for qps in 1 12 24 48 96; do
+  for qps in 12 24 48 96; do
     for index in 1 2 3; do
       benchmark $qps $default_output_len disagg_prefill_zmq $index
     done

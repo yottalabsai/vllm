@@ -112,7 +112,7 @@ main() {
   export VLLM_HOST_IP=$(hostname -I | awk '{print $1}')
   
   launch_chunked_prefill
-  for qps in 1 12 24 48 96; do
+  for qps in 12 24 48 96; do
     for index in 1 2 3; do
       benchmark $qps $default_output_len chunked_prefill $index
     done
