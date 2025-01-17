@@ -39,10 +39,9 @@ if __name__ == "__main__":
     data = []
     names = ['disagg_prefill_http', 'disagg_prefill_zmq', 'chunked_prefill']
     for name in names:
-        # for qps in [1, 12, 24, 48, 96]:
-        for qps in [1, 12, 24]:
+        for qps in [1, 12, 24, 48, 96]:
             for index in range(1, 4):
-                with open(f"results/{name}/{name}_qps_{qps}_{index}.json") as f:
+                with open(f"results/{name}_qps_{qps}_{index}.json") as f:
                     x = json.load(f)
                     x['name'] = name
                     x['index'] = index
@@ -59,38 +58,13 @@ if __name__ == "__main__":
     columns_to_keep = ['name', 'index', 'name_index','qps']
     columns_to_keep.extend(keys)
     df = df[columns_to_keep]
-    # i= 0
-    # for key in keys:
-    #     for i, row in df.iterrows():
-    #         df.at[i, key] = i
-    #         i += 1
 
 
-
-    # for name in names:
-    #     name_df = df[df['name'] == name]
-    #     draw_png(keys, name_df, 'name_index', f'results/{name}')
-    #     print(name_df)
-    #     print('\n\n')
-
+    for name in names:
+        name_df = df[df['name'] == name]
+        draw_png(keys, name_df, 'name_index', f'results/{name}')
 
     result_df = df.groupby(['name', 'qps'])[keys].agg(lambda x: sum(x) / len(x)).reset_index()
-    # print(result_df)
-    # draw_png(keys, result_df, 'name', f'results/http_zmq_chunk')
+    draw_png(keys, result_df, 'name', f'results/http_zmq_chunk')
     http_zmq_df = result_df[result_df['name'].isin(['disagg_prefill_zmq', 'disagg_prefill_http'])]
-    print(http_zmq_df)
     draw_png(keys, http_zmq_df, 'name', f'results/http_zmq')
-
-    
-    
-
-
-    # dis_zmq_df = df[df['name'] == 'disagg_prefill_zmq']
-    # chu_df = df[df['name'] == 'chunked_prefill']
-
-    # draw_png(keys, df, [dis_http_df, dis_zmq_df, chu_df], 'results/http_zmq_chunk')
-    # draw_png(keys, df, [dis_http_df, dis_zmq_df, chu_df], 'results/http_zmq')
-#               name  index             name_index  qps
-#  disagg_prefill_http      3  disagg_prefill_http_3    1
-#  disagg_prefill_http      3  disagg_prefill_http_3   12
-# disagg_prefill_http      3  disagg_prefill_http_3   24
