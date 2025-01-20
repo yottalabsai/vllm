@@ -16,7 +16,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from vllm.logger import init_logger
-from vllm.utils import FlexibleArgumentParser, find_process_using_port
+from vllm.utils import FlexibleArgumentParser
 
 # default prefill and decode addr
 time_out = 180
