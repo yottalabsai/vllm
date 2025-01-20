@@ -205,7 +205,7 @@ async def run_disagg_connector(args, **uvicorn_kwargs) -> None:
     def signal_handler(*_) -> None:
         # Interrupt server on sigterm while initializing
         logger.info("Receive sigterm signal")
-        port = uvicorn_kwargs["port"]
+        port = app.state.port
         process = find_process_using_port(port)
         if process is not None:
             logger.debug(
