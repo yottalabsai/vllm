@@ -201,7 +201,7 @@ async def run_disagg_connector(args, **uvicorn_kwargs) -> None:
     # init uvicorn server
     config = uvicorn.Config(app, host="0.0.0.0", port=app.state.port)
     server = uvicorn.Server(config)
-
+    loop = asyncio.get_event_loop()
     def signal_handler(*_) -> None:
         # Interrupt server on sigterm while initializing
         logger.info("Receive sigterm signal")
@@ -212,7 +212,7 @@ async def run_disagg_connector(args, **uvicorn_kwargs) -> None:
                 "port %s is used by process %s launched with command:\n%s",
                 port, process, " ".join(process.cmdline()))
         logger.info("Shutting down FastAPI HTTP server.")
-        return server.shutdown()
+        loop.run_until_complete(server.shutdown())
 
     signal.signal(signal.SIGTERM, signal_handler)
     await server.serve()
