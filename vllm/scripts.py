@@ -44,7 +44,6 @@ def serve(args: argparse.Namespace) -> None:
 
 
 def connect(args: argparse.Namespace) -> None:
-    register_signal_handlers()
     uvloop.run(run_disagg_connector(args))
 
 

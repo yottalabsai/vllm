@@ -16,7 +16,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from vllm.logger import init_logger
-from vllm.utils import FlexibleArgumentParser
+from vllm.utils import FlexibleArgumentParser, find_process_using_port
 
 # default prefill and decode addr
 time_out = 180
@@ -198,14 +198,23 @@ async def run_disagg_connector(args, **uvicorn_kwargs) -> None:
         "start connect prefill_addr: %s decode_addr: %s zmq server port: %s",
         app.state.prefill_addr, app.state.decode_addr, app.state.port)
 
-    def signal_handler(*_) -> None:
-        # Interrupt server on sigterm while initializing
-        raise KeyboardInterrupt("terminated")
-
-    signal.signal(signal.SIGTERM, signal_handler)
     # init uvicorn server
     config = uvicorn.Config(app, host="0.0.0.0", port=app.state.port)
     server = uvicorn.Server(config)
+
+    def signal_handler(*_) -> None:
+        # Interrupt server on sigterm while initializing
+        logger.info("Receive sigterm signal")
+        port = uvicorn_kwargs["port"]
+        process = find_process_using_port(port)
+        if process is not None:
+            logger.debug(
+                "port %s is used by process %s launched with command:\n%s",
+                port, process, " ".join(process.cmdline()))
+        logger.info("Shutting down FastAPI HTTP server.")
+        return server.shutdown()
+
+    signal.signal(signal.SIGTERM, signal_handler)
     await server.serve()
 
 
