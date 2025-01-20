@@ -1,5 +1,6 @@
 # The CLI entrypoint to vLLM.
 import argparse
+from math import e
 import os
 import signal
 import sys
@@ -44,9 +45,11 @@ def serve(args: argparse.Namespace) -> None:
 
 
 def connect(args: argparse.Namespace) -> None:
-    uvloop.run(run_disagg_connector(args))
-
-
+    try:
+        uvloop.run(run_disagg_connector(args))
+    except KeyboardInterrupt:
+        pass
+    
 
 
 def interactive_cli(args: argparse.Namespace) -> None:
