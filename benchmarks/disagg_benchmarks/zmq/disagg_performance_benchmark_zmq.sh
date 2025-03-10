@@ -20,9 +20,9 @@ kill_gpu_processes() {
   pgrep pt_main_thread | xargs -r kill -9
   pgrep python3 | xargs -r kill -9
   for port in 8000 8100 8200; do lsof -t -i:$port | xargs -r kill -9; done
-
   sleep 1
 }
+
 
 wait_for_server() {
   # wait for vllm server to start
@@ -35,7 +35,7 @@ wait_for_server() {
 }
 
 # a function that waits vLLM disagg to start
-wait_for_disagg_server() {
+wait_for_zmq_server() {
   local log_file=$1
   timeout 1200 bash -c "
     until grep -q 'zmq Server started at' $log_file; do
@@ -48,12 +48,16 @@ launch_chunked_prefill() {
   gpu_memory_utilization=0.6
   max_model_len=10000
   # disagg prefill
-  CUDA_VISIBLE_DEVICES=0 vllm serve $model \
+  CUDA_VISIBLE_DEVICES=0 python3 \
+    -m vllm.entrypoints.openai.api_server \
+    --model $model \
     --port 8100 \
     --max-model-len $max_model_len \
     --enable-chunked-prefill \
     --gpu-memory-utilization $gpu_memory_utilization &
-  CUDA_VISIBLE_DEVICES=1 vllm serve $model \
+  CUDA_VISIBLE_DEVICES=1 python3 \
+    -m vllm.entrypoints.openai.api_server \
+    --model $model \
     --port 8200 \
     --max-model-len $max_model_len \
     --enable-chunked-prefill \
@@ -67,19 +71,24 @@ launch_chunked_prefill() {
 launch_disagg_prefill_http() {
   model="meta-llama/Meta-Llama-3.1-8B-Instruct" 
   # disagg prefill
-  # VLLM_LOGGING_LEVEL=DEBUG CUDA_LAUNCH_BLOCKING=1 
-  CUDA_VISIBLE_DEVICES=0 vllm serve $model \
+  gpu_memory_utilization=0.6
+  max_model_len=10000
+  CUDA_VISIBLE_DEVICES=0 python3 \
+    -m vllm.entrypoints.openai.api_server \
+    --model $model \
     --port 8100 \
-    --max-model-len 10000 \
-    --gpu-memory-utilization 0.6 \
+    --max-model-len $max_model_len \
+    --gpu-memory-utilization $gpu_memory_utilization \
     --kv-transfer-config \
     '{"kv_connector":"PyNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_buffer_size":5e9}' &
 
   # VLLM_LOGGING_LEVEL=DEBUG CUDA_LAUNCH_BLOCKING=1 
-  CUDA_VISIBLE_DEVICES=1 vllm serve $model \
+  CUDA_VISIBLE_DEVICES=1 python3 \
+    -m vllm.entrypoints.openai.api_server \
+    --model $model \
     --port 8200 \
-    --max-model-len 10000 \
-    --gpu-memory-utilization 0.6 \
+    --max-model-len $max_model_len \
+    --gpu-memory-utilization $gpu_memory_utilization \
     --kv-transfer-config \
     '{"kv_connector":"PyNcclConnector","kv_role":"kv_consumer","kv_rank":1,"kv_parallel_size":2,"kv_buffer_size":5e9}' &
 
@@ -181,30 +190,39 @@ main() {
 
   export VLLM_HOST_IP=$(hostname -I | awk '{print $1}')
   
+  echo "launching chunked prefill"
   launch_chunked_prefill
   for qps in 12 24 48 96; do
     for index in 1 2 3; do
       benchmark $qps $default_output_len chunked_prefill $index
     done
   done
+  echo "kill gpu processes start"
   kill_gpu_processes
-
-
+  echo "kill gpu processes end"
+  
+  echo "launching disagg prefill http"
   launch_disagg_prefill_http
   for qps in 12 24 48 96; do
     for index in 1 2 3; do
       benchmark $qps $default_output_len disagg_prefill_http $index
     done
   done
+  echo "kill gpu processes start"
   kill_gpu_processes
-
+  echo "kill gpu processes end"
+  
+  echo "launching disagg prefill zmq"
   launch_disagg_prefill_zmq
   for qps in 12 24 48 96; do
     for index in 1 2 3; do
       benchmark $qps $default_output_len disagg_prefill_zmq $index
     done
   done
+  echo "kill gpu processes start"
   kill_gpu_processes
+  echo "kill gpu processes end"
+  
 
   python3 visualize_benchmark_results_zmq_http_chunked.py
 
