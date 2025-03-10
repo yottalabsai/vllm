@@ -16,7 +16,6 @@ set -ex
 
 kill_gpu_processes() {
   # kill all processes on GPU.
-  pgrep -f vllm | xargs -r kill -9
   pgrep pt_main_thread | xargs -r kill -9
   pgrep python3 | xargs -r kill -9
   for port in 8000 8100 8200; do lsof -t -i:$port | xargs -r kill -9; done
