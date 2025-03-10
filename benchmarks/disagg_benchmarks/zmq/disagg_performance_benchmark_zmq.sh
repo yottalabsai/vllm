@@ -48,14 +48,14 @@ launch_chunked_prefill() {
   gpu_memory_utilization=0.6
   max_model_len=10000
   # disagg prefill
-  CUDA_VISIBLE_DEVICES=0 python3 \
+  CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 \
     -m vllm.entrypoints.openai.api_server \
     --model $model \
     --port 8100 \
     --max-model-len $max_model_len \
     --enable-chunked-prefill \
     --gpu-memory-utilization $gpu_memory_utilization &
-  CUDA_VISIBLE_DEVICES=1 python3 \
+  CUDA_VISIBLE_DEVICES=1 CUDA_LAUNCH_BLOCKING=1 python3 \
     -m vllm.entrypoints.openai.api_server \
     --model $model \
     --port 8200 \
@@ -73,7 +73,7 @@ launch_disagg_prefill_http() {
   # disagg prefill
   gpu_memory_utilization=0.6
   max_model_len=10000
-  CUDA_VISIBLE_DEVICES=0 python3 \
+  CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 \
     -m vllm.entrypoints.openai.api_server \
     --model $model \
     --port 8100 \
@@ -83,7 +83,7 @@ launch_disagg_prefill_http() {
     '{"kv_connector":"PyNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_buffer_size":5e9}' &
 
   # VLLM_LOGGING_LEVEL=DEBUG CUDA_LAUNCH_BLOCKING=1 
-  CUDA_VISIBLE_DEVICES=1 python3 \
+  CUDA_VISIBLE_DEVICES=1 CUDA_LAUNCH_BLOCKING=1 python3 \
     -m vllm.entrypoints.openai.api_server \
     --model $model \
     --port 8200 \
@@ -108,7 +108,7 @@ launch_disagg_prefill_zmq() {
   zmq_server_addr_decode=testipc1
   # disagg prefill
   # VLLM_LOGGING_LEVEL=DEBUG CUDA_LAUNCH_BLOCKING=1 
-  CUDA_VISIBLE_DEVICES=0 vllm disagg $model \
+  CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 vllm disagg $model \
     --zmq-server-addr $zmq_server_addr_prefill \
     --max-model-len $max_model_len \
     --gpu-memory-utilization $gpu_memory_utilization \
@@ -117,7 +117,7 @@ launch_disagg_prefill_zmq() {
   prefill_pid=$!
 
   # VLLM_LOGGING_LEVEL=DEBUG CUDA_LAUNCH_BLOCKING=1 
-  CUDA_VISIBLE_DEVICES=1 vllm disagg $model \
+  CUDA_VISIBLE_DEVICES=1 CUDA_LAUNCH_BLOCKING=1 vllm disagg $model \
     --zmq-server-addr $zmq_server_addr_decode \
     --max-model-len $max_model_len \
     --gpu-memory-utilization $gpu_memory_utilization \
