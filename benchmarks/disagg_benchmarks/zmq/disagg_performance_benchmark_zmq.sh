@@ -48,14 +48,12 @@ launch_chunked_prefill() {
   gpu_memory_utilization=0.6
   max_model_len=10000
   # disagg prefill
-  CUDA_VISIBLE_DEVICES=0 vllm serve \
-    --model $model \
+  CUDA_VISIBLE_DEVICES=0 vllm serve $model \
     --port 8100 \
     --max-model-len $max_model_len \
     --enable-chunked-prefill \
     --gpu-memory-utilization $gpu_memory_utilization &
-  CUDA_VISIBLE_DEVICES=1 vllm serve \
-    --model $model \
+  CUDA_VISIBLE_DEVICES=1 vllm serve $model \
     --port 8200 \
     --max-model-len $max_model_len \
     --enable-chunked-prefill \
@@ -70,8 +68,7 @@ launch_disagg_prefill_http() {
   model="meta-llama/Meta-Llama-3.1-8B-Instruct" 
   # disagg prefill
   # VLLM_LOGGING_LEVEL=DEBUG CUDA_LAUNCH_BLOCKING=1 
-  CUDA_VISIBLE_DEVICES=0 vllm serve \
-    --model $model \
+  CUDA_VISIBLE_DEVICES=0 vllm serve $model \
     --port 8100 \
     --max-model-len 10000 \
     --gpu-memory-utilization 0.6 \
@@ -79,8 +76,7 @@ launch_disagg_prefill_http() {
     '{"kv_connector":"PyNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_buffer_size":5e9}' &
 
   # VLLM_LOGGING_LEVEL=DEBUG CUDA_LAUNCH_BLOCKING=1 
-  CUDA_VISIBLE_DEVICES=1 vllm serve \
-    --model $model \
+  CUDA_VISIBLE_DEVICES=1 vllm serve $model \
     --port 8200 \
     --max-model-len 10000 \
     --gpu-memory-utilization 0.6 \
@@ -101,8 +97,7 @@ launch_disagg_prefill_zmq() {
   max_model_len=10000
   # disagg prefill
   # VLLM_LOGGING_LEVEL=DEBUG CUDA_LAUNCH_BLOCKING=1 
-  CUDA_VISIBLE_DEVICES=0 vllm disagg \
-    --model $model \
+  CUDA_VISIBLE_DEVICES=0 vllm disagg $model \
     --zmq-server-addr testipc0 \
     --max-model-len $max_model_len \
     --gpu-memory-utilization $gpu_memory_utilization \
@@ -110,8 +105,7 @@ launch_disagg_prefill_zmq() {
     '{"kv_connector":"PyNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_buffer_size":5e9}' > vllm_disagg_prefill.log 2>&1 &
 
   # VLLM_LOGGING_LEVEL=DEBUG CUDA_LAUNCH_BLOCKING=1 
-  CUDA_VISIBLE_DEVICES=1 vllm disagg \
-    --model $model \
+  CUDA_VISIBLE_DEVICES=1 vllm disagg $model \
     --zmq-server-addr testipc1 \
     --max-model-len $max_model_len \
     --gpu-memory-utilization $gpu_memory_utilization \
