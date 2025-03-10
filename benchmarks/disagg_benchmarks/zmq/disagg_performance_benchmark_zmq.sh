@@ -19,7 +19,7 @@ kill_gpu_processes() {
   pgrep -f vllm | xargs -r kill -9
   pgrep pt_main_thread | xargs -r kill -9
   pgrep python3 | xargs -r kill -9
-  for port in 8000; do lsof -t -i:$port | xargs -r kill -9; done
+  for port in 8000 8100 8200; do lsof -t -i:$port | xargs -r kill -9; done
 
   sleep 1
 }
@@ -117,7 +117,7 @@ launch_disagg_prefill_zmq() {
   --prefill-addr testipc0 \
   --decode-addr testipc1 &
 
-  wait_for_server 8100
+  wait_for_server 8000
   wait_for_disagg_server vllm_disagg_prefill.log
   wait_for_disagg_server vllm_disagg_decode.log
   sleep 1
@@ -206,7 +206,7 @@ main() {
   done
   kill_gpu_processes
 
-  python3 visualize_benchmark_results_zmq_http.py
+  python3 visualize_benchmark_results_zmq_http_chunked.py
 
 }
 
