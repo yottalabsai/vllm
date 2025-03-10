@@ -42,6 +42,16 @@ wait_for_zmq_server() {
     done" && return 0 || return 1
 }
 
+# a function that waits vLLM disagg to start
+wait_for_zmq_server() {
+  local pid=$1
+  timeout 1200 bash -c "
+    until grep -q 'zmq Server started at' <(tail -f /proc/$pid/fd/1); do
+      sleep 1
+    done" && return 0 || return 1
+}
+
+
 launch_chunked_prefill() {
   model="meta-llama/Meta-Llama-3.1-8B-Instruct"
   gpu_memory_utilization=0.6
@@ -103,31 +113,35 @@ launch_disagg_prefill_zmq() {
   model="meta-llama/Meta-Llama-3.1-8B-Instruct" 
   gpu_memory_utilization=0.6
   max_model_len=10000
+  zmq_server_addr_prefill=testipc0
+  zmq_server_addr_decode=testipc1
   # disagg prefill
   # VLLM_LOGGING_LEVEL=DEBUG CUDA_LAUNCH_BLOCKING=1 
   CUDA_VISIBLE_DEVICES=0 vllm disagg $model \
-    --zmq-server-addr testipc0 \
+    --zmq-server-addr $zmq_server_addr_prefill \
     --max-model-len $max_model_len \
     --gpu-memory-utilization $gpu_memory_utilization \
     --kv-transfer-config \
     '{"kv_connector":"PyNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_buffer_size":5e9}' > vllm_disagg_prefill.log 2>&1 &
+  prefill_pid=$!
 
   # VLLM_LOGGING_LEVEL=DEBUG CUDA_LAUNCH_BLOCKING=1 
   CUDA_VISIBLE_DEVICES=1 vllm disagg $model \
-    --zmq-server-addr testipc1 \
+    --zmq-server-addr $zmq_server_addr_decode \
     --max-model-len $max_model_len \
     --gpu-memory-utilization $gpu_memory_utilization \
     --kv-transfer-config \
     '{"kv_connector":"PyNcclConnector","kv_role":"kv_consumer","kv_rank":1,"kv_parallel_size":2,"kv_buffer_size":5e9}' > vllm_disagg_decode.log 2>&1 &
-
+  decode_pid=$!
+  
   vllm connect \
   --port 8000 \
-  --prefill-addr testipc0 \
-  --decode-addr testipc1 &
+  --prefill-addr $zmq_server_addr_prefill \
+  --decode-addr $zmq_server_addr_decode &
 
   wait_for_server 8000
-  wait_for_disagg_server vllm_disagg_prefill.log
-  wait_for_disagg_server vllm_disagg_decode.log
+  wait_for_zmq_server "$prefill_pid"
+  wait_for_zmq_server "$decode_pid"
   sleep 1
 }
 
