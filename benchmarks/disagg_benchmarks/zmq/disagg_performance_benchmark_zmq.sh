@@ -35,15 +35,6 @@ wait_for_server() {
 
 # a function that waits vLLM disagg to start
 wait_for_zmq_server() {
-  local log_file=$1
-  timeout 1200 bash -c "
-    until grep -q 'zmq Server started at' $log_file; do
-      sleep 1
-    done" && return 0 || return 1
-}
-
-# a function that waits vLLM disagg to start
-wait_for_zmq_server() {
   local pid=$1
   timeout 1200 bash -c "
     until grep -q 'zmq Server started at' <(tail -f /proc/$pid/fd/1); do
