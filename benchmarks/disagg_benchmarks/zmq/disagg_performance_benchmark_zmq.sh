@@ -115,7 +115,6 @@ launch_disagg_prefill_zmq() {
     --kv-transfer-config \
     '{"kv_connector":"PyNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_buffer_size":5e9}' > vllm_disagg_prefill.log 2>&1 &
   prefill_pid=$!
-  sleep 1
 
   # VLLM_LOGGING_LEVEL=DEBUG CUDA_LAUNCH_BLOCKING=1 
   CUDA_VISIBLE_DEVICES=1 CUDA_LAUNCH_BLOCKING=1 vllm disagg $model \
@@ -125,16 +124,17 @@ launch_disagg_prefill_zmq() {
     --kv-transfer-config \
     '{"kv_connector":"PyNcclConnector","kv_role":"kv_consumer","kv_rank":1,"kv_parallel_size":2,"kv_buffer_size":5e9}' > vllm_disagg_decode.log 2>&1 &
   decode_pid=$!
-  sleep 1
   
+  wait_for_zmq_server "$prefill_pid"
+  wait_for_zmq_server "$decode_pid"
+
   vllm connect \
   --port 8000 \
   --prefill-addr $zmq_server_addr_prefill \
   --decode-addr $zmq_server_addr_decode &
 
   wait_for_server 8000
-  wait_for_zmq_server "$prefill_pid"
-  wait_for_zmq_server "$decode_pid"
+
   sleep 1
 }
 
