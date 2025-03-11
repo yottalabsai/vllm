@@ -37,7 +37,7 @@ wait_for_server() {
 wait_for_zmq_server() {
   local pid=$1
   timeout 1200 bash -c "
-    until grep -q 'zmq Server started at' <(tail -f /proc/$pid/fd/1); do
+    until grep -q 'zmq Server started at' <(tail -500f /proc/$pid/fd/1); do
       sleep 1
     done" && return 0 || return 1
 }
